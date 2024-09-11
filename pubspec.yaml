@@ -13,16 +13,16 @@ dependencies:
 
   # NOTE: Assets
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
 
   # NOTE: Core
   easy_extension:
     git:
       url: https://github.com/scadasystems/Easy-Extension.git
+
   flex_color_scheme: ^7.3.1
   http:
-
   # NOTE: UI/UX
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
