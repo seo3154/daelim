@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:daelim/common/enums/sso_enum.dart';
+import 'package:daelim/common/extensions/context_extension.dart';
+import 'package:daelim/common/widgets/gradient_divider.dart';
 import 'package:daelim/config.dart';
 import 'package:easy_extension/easy_extension.dart';
 import 'package:flutter/material.dart';
@@ -22,12 +25,30 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose();
 
   // NOTE: 로그인 API 호출
-  void _onFetchedApi() async {
+  void _onFetchedApi() async {}
+
+  // NOTE: 패스워드 재설정
+  void _onRecoveryPassword() {}
+
+  // NOTE: 로그인 버튼
+  void _onSignIn() async {
+    final email = _emailController.text;
+    final password = _pwController.text;
+
+    final loginData = {
+      'email': email,
+      'password': password,
+    };
+
     final response = await http.post(
       Uri.parse(authUrl),
-      body: {
-        'email': '202030416@daelim.ac.kr',
-        'password': '202030416',
+      body: jsonEncode(loginData),
+    );
+
+    Log.green(
+      {
+        'status': response.statusCode,
+        'body': response.body,
       },
     );
 
@@ -41,26 +62,31 @@ class _LoginScreenState extends State<LoginScreen> {
       print('요청 실패: ${response.statusCode}');
       print('응답 내용: ${response.body}');
     }
-
-    Log.green(
-      {
-        'status': response.statusCode,
-        'body': response.body,
-      },
-    );
   }
 
-  // NOTE: 패스워드 재설정
-  void _onRecoveryPassword() {}
-
-  // NOTE: 로그인 버튼
-  void _onSignIn() {}
+  // NOTE: SSO로그인 버튼
+  void _onSsoSignIn(SsoEnum type) {
+    return context.showSnackBarText('준비 중인 기능입니다.');
+    // switch (type) {
+    //   case SsoEnum.google:
+    //     context.showSnackBarText('구글 로그인 시작');
+    //     break;
+    //   case SsoEnum.apple:
+    //     context.showSnackBarText('준비 중인 기능입니다.');
+    //     break;
+    //   case SsoEnum.github:
+    //     context.showSnackBarText('준비 중인 기능입니다.');
+    //     break;
+    //   default:
+    //     break;
+    // }
+  }
 
   // NOTE: 타이틀 텍스트 위젯들
   List<Widget> _buildTitleText() => [
-        Text(
+        const Text(
           'Hello Again!',
-          style: GoogleFonts.raleway(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -68,10 +94,10 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(
           height: 10,
         ),
-        Text(
+        const Text(
           'Wellcome back you\'ve \nbeen missed!',
           textAlign: TextAlign.center,
-          style: GoogleFonts.raleway(
+          style: TextStyle(
             fontSize: 20,
           ),
         ),
@@ -137,6 +163,30 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // NOTE: SSO 버튼 위젯
+  Widget _buildSsoButton({
+    required String iconUrl,
+
+    // 버튼 클릭에 대한 파라미터 구현
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 80,
+        height: 60,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.white,
+          ),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        padding: const EdgeInsets.all(10),
+        child: Image.network(iconUrl),
+      ),
+    );
+  }
+
   // 람다 형식 예제
   // bool noLamda() {
   //   return false;
@@ -144,6 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // bool lamda() => true;
   // bool get getLamda => true;
 
+  // 메인 화면
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,70 +206,148 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 20.heightBox,                // easy_extension 사용시
-              // double.infinity.widthBox,    // easy_extension 사용시
+          child: DefaultTextStyle(
+            style: GoogleFonts.raleway(
+                color: ThemeData().textTheme.bodyMedium?.color),
+            // color: Theme.of(context).brightness == Brightness.dark //
+            //   ? Colors.black
+            //   : Colors.white;
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 20.heightBox,                // easy_extension 사용시
+                // double.infinity.widthBox,    // easy_extension 사용시
 
-              // 타이틀 상단 박스
-              const SizedBox(
-                height: 40,
-                // width: double.infinity,    // 초반 자리잡기용
-              ),
-
-              // 타이틀
-              ..._buildTitleText(),
-
-              // 타이틀 <-> 텍스트 입력창 사이 박스
-              const SizedBox(
-                height: 50,
-              ),
-
-              // 텍스트 입력창
-              ..._buildTextFields(),
-
-              // 텍스트 입력창 <-> 로그인 버튼 사이 박스
-              const SizedBox(
-                height: 20,
-              ),
-
-              // Recovery Password
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _onRecoveryPassword,
-                  child: Text(
-                    'Recovery Password',
-                    style: GoogleFonts.raleway(fontSize: 12),
-                  ),
+                // 타이틀 상단 박스
+                const SizedBox(
+                  height: 40,
+                  // width: double.infinity,    // 초반 자리잡기용
                 ),
-              ),
 
-              // Sign In Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _onSignIn,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE46A61),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 25,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Sign In',
-                    style: GoogleFonts.raleway(
-                      color: Colors.white,
-                      fontSize: 20,
+                // 타이틀
+                ..._buildTitleText(),
+
+                // 타이틀 <-> 텍스트 입력창 사이 박스
+                const SizedBox(
+                  height: 50,
+                ),
+
+                // 텍스트 입력창
+                ..._buildTextFields(),
+
+                // 텍스트 입력창 <-> 로그인 버튼 사이 박스
+                const SizedBox(
+                  height: 20,
+                ),
+
+                // Recovery Password
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _onRecoveryPassword,
+                    child: const Text(
+                      'Recovery Password',
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ),
-              )
-            ],
+
+                // Recovery Password <-> Sign In
+                const SizedBox(
+                  height: 20,
+                ),
+
+                // Sign In Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _onSignIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE46A61),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 25,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 60,
+                ),
+
+                // Or continue with
+                const Row(
+                  children: [
+                    Expanded(
+                      child: GradientDivider(),
+                    ),
+                    SizedBox(
+                      width: 15,
+                    ),
+                    Text(
+                      'Or continue with',
+                    ),
+                    SizedBox(
+                      width: 15,
+                    ),
+                    Expanded(
+                      child: GradientDivider(
+                        reverse: true,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(
+                  height: 60,
+                ),
+
+                // SSO Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildSsoButton(
+                        onTap: () => _onSsoSignIn(SsoEnum.google),
+                        iconUrl: icGoogle),
+                    _buildSsoButton(
+                        onTap: () => _onSsoSignIn(SsoEnum.apple),
+                        iconUrl: icApple),
+                    _buildSsoButton(
+                        onTap: () => _onSsoSignIn(SsoEnum.github),
+                        iconUrl: icGithub),
+                  ],
+                ),
+
+                const SizedBox(
+                  height: 60,
+                ),
+
+                // Column(
+                //   children: [
+                //     Align(
+                //       alignment: Alignment.centerRight,
+                //       child: TextButton(
+                //         onPressed: _onRecoveryPassword,
+                //         child: const Text(
+                //           'Recovery Password',
+                //           style: TextStyle(fontSize: 12),
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+              ],
+            ),
           ),
         ),
       ),
