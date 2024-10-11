@@ -5,8 +5,10 @@ import 'package:daelim/common/helpers/storage_helper.dart';
 import 'package:daelim/common/widgets/gradient_divider.dart';
 import 'package:daelim/config.dart';
 import 'package:daelim/models/auth_data.dart';
+import 'package:daelim/routes/app_screen.dart';
 import 'package:easy_extension/easy_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 // ignore: unused_import
 import 'package:http/http.dart' as http;
@@ -43,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
     };
 
     final response = await http.post(
-      Uri.parse(authUrl),
+      Uri.parse(getTokenUrl),
       body: jsonEncode(loginData),
     );
 
@@ -73,6 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final savedAuthData = StorageHelper.authData;
     Log.green(savedAuthData);
 
+    if (mounted) {
+      context.goNamed(AppScreen.main.name);
+    }
     // response 처리
     // if (response.statusCode == 200) {
     //   // 요청이 성공적으로 완료되었을 때 처리할 내용

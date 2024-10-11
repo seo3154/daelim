@@ -6,20 +6,24 @@ class StorageHelper {
 
   static const String _authKey = 'authKey';
 
-  // SharedPreference 초기화
+  // NOTE: SharedPreference 초기화
   static Future<void> initialized() async {
     _pref = await SharedPreferences.getInstance();
   }
 
-  // AuthData 저장
+  // NOTE: AuthDate 불러오기
+  static AuthData? get authData {
+    final data = _pref!.getString(_authKey);
+    return data != null ? AuthData.fromJson(data) : null;
+  }
+
+  // NOTE: AuthData 저장하기
   static Future<bool>? setAuthData(AuthData data) {
     return _pref!.setString(_authKey, data.toJson());
   }
 
-  // AuthDate 불러오기
-  static AuthData? get authData {
-    final data = _pref!.getString(_authKey);
-
-    return data != null ? AuthData.fromJson(data) : null;
+  // NOTE: AuthData 삭제하기
+  static Future<bool> removeAuthData() {
+    return _pref!.remove(_authKey);
   }
 }
