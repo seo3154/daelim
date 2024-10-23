@@ -5,12 +5,12 @@ enum AppScreen { login, main, setting }
 extension AppScreenExtension on AppScreen {
   String get toPath {
     switch (this) {
+      case AppScreen.login:
+        return '/login';
       case AppScreen.main:
         return '/main';
       case AppScreen.setting:
         return '/setting';
-      case AppScreen.login:
-        return '/login';
     }
   }
 
@@ -20,17 +20,8 @@ extension AppScreenExtension on AppScreen {
         return Icons.home;
       case AppScreen.setting:
         return Icons.settings;
-      // 수정해야함
       default:
-        return Icons.login;
+        return Icons.face;
     }
   }
 }
-
-
-// case AppScreen.main:
-//         return Icons.home;
-//       case AppScreen.setting:
-//         return Icons.settings;
-//       default:
-//         return Icons.home;

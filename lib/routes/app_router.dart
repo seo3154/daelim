@@ -8,11 +8,10 @@ import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
   initialLocation: AppScreen.login.toPath,
-  // 중간고사 redirect
   redirect: (context, state) {
     Log.green('Route FullPath: ${state.fullPath}');
 
-    if (state.fullPath != AppScreen.login.toPath) {
+    if (state.fullPath == AppScreen.login.toPath) {
       return null;
     }
 
