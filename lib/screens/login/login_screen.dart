@@ -26,10 +26,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isObscure = true;
 
   @override
-  void dispose();
-
-  // NOTE: 로그인 API 호출
-  void _onFetchedApi() async {}
+  void dispose() {
+    _emailController.dispose();
+    _pwController.dispose();
+    super.dispose();
+  }
 
   // NOTE: 패스워드 재설정
   void _onRecoveryPassword() {}
@@ -54,62 +55,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (statusCode != 200) {
       if (mounted) {
-        return context.showSnackBar(
+        context.showSnackBar(
           content: Text(body),
         );
       }
       return;
     }
 
-    // Log.green(
-    //   {
-    //     'status': response.statusCode,
-    //     'body': response.body,
-    //   },
-    // );
-
-    // TODO: AuthData로 변환
+    // NOTE: AuthData 로 변환
     final authData = AuthData.fromMap(jsonDecode(body));
-    // Log.green(authData);
     await StorageHelper.setAuthData(authData);
     final savedAuthData = StorageHelper.authData;
+
+    // TODO: 화면 이동
     Log.green(savedAuthData);
 
-    if (mounted) {
-      context.goNamed(AppScreen.main.name);
-    }
-    // response 처리
-    // if (response.statusCode == 200) {
-    //   // 요청이 성공적으로 완료되었을 때 처리할 내용
-    //   final data = json.decode(response.body);
-    //   print('요청 성공: ${data['message']}');
-    // } else {
-    //   // 요청이 실패했을 때 처리할 내용
-    //   print('요청 실패: ${response.statusCode}');
-    //   print('응답 내용: ${response.body}');
-    // }
+    if (mounted) context.goNamed(AppScreen.main.name);
   }
 
-  // NOTE: SSO로그인 버튼
+  // NOTE: SSO 로그인 버튼
   void _onSsoSignIn(SsoEnum type) {
-    return context.showSnackBarText('준비 중인 기능입니다.');
-    // switch (type) {
-    //   case SsoEnum.google:
-    //     context.showSnackBarText('구글 로그인 시작');
-    //     break;
-    //   case SsoEnum.apple:
-    //     context.showSnackBarText('준비 중인 기능입니다.');
-    //     break;
-    //   case SsoEnum.github:
-    //     context.showSnackBarText('준비 중인 기능입니다.');
-    //     break;
-    //   default:
-    //     break;
-    // }
+    switch (type) {
+      case SsoEnum.google:
+        context.showSnackBarText('구글 로그인 시작');
+      case SsoEnum.apple:
+      case SsoEnum.github:
+        context.showSnackBarText('준비 중인 기능입니다.');
+    }
   }
 
   // NOTE: 타이틀 텍스트 위젯들
-  List<Widget> _buildTitleText() => [
+  List<Widget> _buildTitleTexts() => [
         const Text(
           'Hello Again!',
           style: TextStyle(
@@ -117,59 +93,49 @@ class _LoginScreenState extends State<LoginScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        15.heightBox,
         const Text(
-          'Wellcome back you\'ve \nbeen missed!',
+          'Wellcome back you\'ve\nbeen missed!',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20,
           ),
-        ),
+        )
       ];
 
   // NOTE: 텍스트 입력 위젯들
-  List<Widget> _buildTextFields() {
-    return [
-      _buildTextField(
-        controller: _emailController,
-        hintText: 'Enter email',
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      _buildTextField(
-        onObscure: (down) {
-          setState(() {
-            if (down) {
-              _isObscure = false;
-            } else {
-              _isObscure = true;
-            }
-          });
-        },
-        controller: _pwController,
-        hintText: 'Password',
-        obscure: _isObscure,
-      ),
-    ];
-  }
+  List<Widget> _buildTextFields() => [
+        _buildTextField(
+          controller: _emailController,
+          hintText: 'Enter email',
+        ),
+        10.heightBox,
+        _buildTextField(
+          onObscure: (down) {
+            setState(() {
+              _isObscure = !down;
+            });
+          },
+          controller: _pwController,
+          hintText: 'Password',
+          obscure: _isObscure,
+        ),
+      ];
 
-  // NOTE: 입력폼 위젯
+  // NOTE: 텍스트 입력 위젯
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
-    bool? obscure = false,
+    bool? obscure,
     Function(bool down)? onObscure,
   }) {
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide.none,
     );
+
     return TextField(
       controller: controller,
-      // contextMenuBuilder: null, // 복사, 붙어넣기 창 안뜨게 하는 코드
       decoration: InputDecoration(
         fillColor: Colors.white,
         enabledBorder: border,
@@ -180,7 +146,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 onTapDown: (details) => onObscure?.call(true),
                 onTapUp: (details) => onObscure?.call(false),
                 child: Icon(
-                  obscure ? Icons.visibility : Icons.visibility_off,
+                  obscure //
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                 ),
               )
             : null,
@@ -192,8 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
   // NOTE: SSO 버튼 위젯
   Widget _buildSsoButton({
     required String iconUrl,
-
-    // 버튼 클릭에 대한 파라미터 구현
     VoidCallback? onTap,
   }) {
     return InkWell(
@@ -213,61 +179,36 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // 람다 형식 예제
-  // bool noLamda() {
-  //   return false;
-  // }
-  // bool lamda() => true;
-  // bool get getLamda => true;
-
-  // 메인 화면
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFDEDEE2,
-      ),
+      backgroundColor: const Color(0xFFDEDEE2),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
           ),
           child: DefaultTextStyle(
-            style: GoogleFonts.raleway(
-                color: ThemeData().textTheme.bodyMedium?.color),
-            // color: Theme.of(context).brightness == Brightness.dark //
-            //   ? Colors.black
-            //   : Colors.white;
+            style: GoogleFonts.poppins(
+              color: context.textTheme.bodyMedium?.color,
+            ),
             child: Center(
               child: SizedBox(
                 width: 300,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 20.heightBox,                // easy_extension 사용시
-                    // double.infinity.widthBox,    // easy_extension 사용시
-
-                    // 타이틀 상단 박스
+                    // NOTE: 둘이 같은 의미
+                    36.heightBox,
                     const SizedBox(
-                      height: 80,
-                      // width: double.infinity,    // 초반 자리잡기용
+                      height: 60,
                     ),
 
-                    // 타이틀
-                    ..._buildTitleText(),
+                    ..._buildTitleTexts(),
 
-                    // 타이틀 <-> 텍스트 입력창 사이 박스
-                    const SizedBox(
-                      height: 50,
-                    ),
+                    40.heightBox,
 
-                    // 텍스트 입력창
                     ..._buildTextFields(),
-
-                    // 텍스트 입력창 <-> 로그인 버튼 사이 박스
-                    const SizedBox(
-                      height: 20,
-                    ),
 
                     // Recovery Password
                     Align(
@@ -281,10 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    // Recovery Password <-> Sign In
-                    const SizedBox(
-                      height: 20,
-                    ),
+                    30.heightBox,
 
                     // Sign In Button
                     SizedBox(
@@ -294,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE46A61),
                           padding: const EdgeInsets.symmetric(
-                            vertical: 25,
+                            vertical: 20,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -304,77 +242,48 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Sign In',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
                           ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 60,
-                    ),
+                    40.heightBox,
 
                     // Or continue with
-                    const Row(
+                    Row(
                       children: [
-                        Expanded(
+                        const Expanded(
                           child: GradientDivider(),
                         ),
-                        SizedBox(
-                          width: 15,
-                        ),
-                        Text(
-                          'Or continue with',
-                        ),
-                        SizedBox(
-                          width: 15,
-                        ),
-                        Expanded(
-                          child: GradientDivider(
-                            reverse: true,
-                          ),
+                        15.widthBox,
+                        const Text('Or continue with'),
+                        15.widthBox,
+                        const Expanded(
+                          child: GradientDivider(reverse: true),
                         ),
                       ],
                     ),
 
-                    const SizedBox(
-                      height: 60,
-                    ),
+                    40.heightBox,
 
                     // SSO Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildSsoButton(
-                            onTap: () => _onSsoSignIn(SsoEnum.google),
-                            iconUrl: icGoogle),
+                          onTap: () => _onSsoSignIn(SsoEnum.google),
+                          iconUrl: icGoogle,
+                        ),
                         _buildSsoButton(
-                            onTap: () => _onSsoSignIn(SsoEnum.apple),
-                            iconUrl: icApple),
+                          onTap: () => _onSsoSignIn(SsoEnum.apple),
+                          iconUrl: icApple,
+                        ),
                         _buildSsoButton(
-                            onTap: () => _onSsoSignIn(SsoEnum.github),
-                            iconUrl: icGithub),
+                          onTap: () => _onSsoSignIn(SsoEnum.github),
+                          iconUrl: icGithub,
+                        ),
                       ],
                     ),
-
-                    const SizedBox(
-                      height: 60,
-                    ),
-
-                    // Column(
-                    //   children: [
-                    //     Align(
-                    //       alignment: Alignment.centerRight,
-                    //       child: TextButton(
-                    //         onPressed: _onRecoveryPassword,
-                    //         child: const Text(
-                    //           'Recovery Password',
-                    //           style: TextStyle(fontSize: 12),
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
                   ],
                 ),
               ),

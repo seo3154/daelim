@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:daelim/routes/app_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +22,7 @@ class AppNavigationRail extends StatelessWidget {
         context.pushNamed(screen.name);
       },
       selectedIndex: appScreen.index - 1,
-      destinations: AppScreen.values.map((e) {
+      destinations: screens.map((e) {
         return NavigationRailDestination(
           icon: Icon(e.getIcon),
           label: Text(e.name),

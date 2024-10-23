@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:daelim/common/scaffold/app_navigation_rail.dart';
 import 'package:daelim/routes/app_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,9 +20,7 @@ class AppScaffold extends StatelessWidget {
         child: Row(
           children: [
             AppNavigationRail(appScreen: appScreen),
-            Expanded(
-              child: child,
-            ),
+            Expanded(child: child),
           ],
         ),
       ),

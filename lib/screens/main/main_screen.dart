@@ -5,15 +5,17 @@ import 'package:flutter/material.dart';
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
-  // final int _selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return const AppScaffold(
       appScreen: AppScreen.main,
-      // 수정해야함
       child: Center(
-        child: SizedBox(),
+        child: Text(
+          '메인',
+          style: TextStyle(
+            fontSize: 40,
+          ),
+        ),
       ),
     );
   }
