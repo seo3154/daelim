@@ -8,6 +8,9 @@ import 'package:easy_extension/easy_extension.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+// ignore: unused_import
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -54,9 +57,11 @@ class _SettingScreenState extends State<SettingScreen> {
 
     final userData = jsonDecode(body);
 
-    _name = userData['name'];
-    _studentNumber = userData['student_number'];
-    _profileImageUrl = userData['profile_image'];
+    setState(() {
+      _name = userData['name'];
+      _studentNumber = userData['student_number'];
+      _profileImageUrl = userData['profile_image'];
+    });
   }
 
   // NOTE: 프로필 이미지 업로드
@@ -72,7 +77,17 @@ class _SettingScreenState extends State<SettingScreen> {
     if (result == null) return;
 
     final imageFile = result.files.single;
+    // final imageBytes = imageFile.bytes;
+    final imageName = imageFile.name;
     final imagePath = imageFile.path;
+    final imageMime = lookupMimeType(imageName) ?? 'image/jpeg';
+
+    // NOTE: Mime 타입 자르기
+    final mimeSplit = imageMime.split('/');
+    final mimeType = mimeSplit.first;
+    final mimeSubtype = mimeSplit.last;
+
+    Log.green('프로필 이미지 업로드: $imageName, $imageMime ($mimeType, $mimeSubtype)');
 
     if (imagePath == null) return;
 
@@ -92,11 +107,18 @@ class _SettingScreenState extends State<SettingScreen> {
         await http.MultipartFile.fromPath(
           'image',
           imagePath,
-          // contentType: http.MediaType(),
+          contentType: MediaType(mimeType, mimeSubtype),
         ),
       );
 
+    Log.green('이미지 업로드');
+
     final response = await uploadRequest.send();
+    final uploadResult = await http.Response.fromStream(response);
+
+    Log.green(
+      '이미지 업로드 결과: ${response.statusCode}, ${uploadResult.body}',
+    );
 
     if (response.statusCode != 200) return;
 
@@ -125,7 +147,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     : const CircularProgressIndicator(),
               ),
             ),
-            title: Text(_name ?? '데이터 로딩 중...'),
+            title: Text(_name ?? '데이터 로딩 중..'),
             subtitle: _studentNumber != null //
                 ? Text(
                     _studentNumber!,
