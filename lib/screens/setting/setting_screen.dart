@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:daelim/common/helpers/storage_helper.dart';
+import 'package:daelim/helpers/storage_helper.dart';
 import 'package:daelim/common/scaffold/app_scaffold.dart';
 import 'package:daelim/config.dart';
 import 'package:daelim/routes/app_screen.dart';
+import 'package:daelim/screens/setting/dialogs/change_password_dialog.dart';
 import 'package:easy_extension/easy_extension.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 // ignore: unused_import
@@ -77,19 +79,20 @@ class _SettingScreenState extends State<SettingScreen> {
     if (result == null) return;
 
     final imageFile = result.files.single;
-    // final imageBytes = imageFile.bytes;
     final imageName = imageFile.name;
-    final imagePath = imageFile.path;
     final imageMime = lookupMimeType(imageName) ?? 'image/jpeg';
+    Uint8List? imageBytes;
 
-    // NOTE: Mime 타입 자르기
-    final mimeSplit = imageMime.split('/');
-    final mimeType = mimeSplit.first;
-    final mimeSubtype = mimeSplit.last;
+    String? imagePath;
 
-    Log.green('프로필 이미지 업로드: $imageName, $imageMime ($mimeType, $mimeSubtype)');
+    if (kIsWeb) {
+      imageBytes = imageFile.bytes;
+    } else {
+      imagePath = imageFile.path!;
+    }
 
-    if (imagePath == null) return;
+    Log.green(
+        '이미지 업로드: $imageName / Bytes: ${imageBytes?.length} / Path: $imagePath');
 
     final tokenType = StorageHelper.authData!.tokenType.firstUpperCase;
     final token = StorageHelper.authData!.token;
@@ -104,59 +107,90 @@ class _SettingScreenState extends State<SettingScreen> {
         },
       )
       ..files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          imagePath,
-          contentType: MediaType(mimeType, mimeSubtype),
-        ),
+        imageBytes != null
+            ? http.MultipartFile.fromBytes(
+                'image',
+                imageBytes,
+                filename: imageName,
+                contentType: MediaType.parse(imageMime),
+              )
+            : await http.MultipartFile.fromPath(
+                'image',
+                imagePath!,
+                contentType: MediaType.parse(imageMime),
+              ),
       );
-
-    Log.green('이미지 업로드');
 
     final response = await uploadRequest.send();
     final uploadResult = await http.Response.fromStream(response);
 
     Log.green(
-      '이미지 업로드 결과: ${response.statusCode}, ${uploadResult.body}',
+      '이미지 업로드 결과: ${uploadResult.statusCode}, ${uploadResult.body}',
     );
 
-    if (response.statusCode != 200) return;
+    if (uploadResult.statusCode != 200) return;
 
     _fetchUserData();
+  }
+
+  // NOTE: 비밀번호 변경 다이얼로그
+  Future<void> _changePasswordDialog() async {
+    showDialog(
+      context: context,
+      builder: (context) => const ChangePasswordDialog(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appScreen: AppScreen.setting,
-      child: Column(
-        children: [
-          ListTile(
-            leading: InkWell(
-              onTap: _uploadProfileImage,
-              child: CircleAvatar(
-                backgroundImage: _profileImageUrl != null //
-                    ? _profileImageUrl!.isNotEmpty
-                        ? NetworkImage(_profileImageUrl!)
-                        : null
-                    : null,
-                child: _profileImageUrl != null //
-                    ? _profileImageUrl!.isEmpty
-                        ? const Icon(Icons.cancel)
-                        : null
-                    : const CircularProgressIndicator(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 13,
+        ),
+        child: Column(
+          children: [
+            // NOTE: 유저 정보 표시(프로필 사진, 이름, 학번
+            ListTile(
+              leading: InkWell(
+                onTap: _uploadProfileImage,
+                child: CircleAvatar(
+                  backgroundImage: _profileImageUrl != null //
+                      ? _profileImageUrl!.isNotEmpty
+                          ? NetworkImage(_profileImageUrl!)
+                          : null
+                      : null,
+                  child: _profileImageUrl != null //
+                      ? _profileImageUrl!.isEmpty
+                          ? const Icon(Icons.cancel)
+                          : null
+                      : const CircularProgressIndicator(),
+                ),
               ),
+              title: Text(_name ?? '데이터 로딩 중..'),
+              subtitle: _studentNumber != null //
+                  ? Text(
+                      _studentNumber!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : null,
             ),
-            title: Text(_name ?? '데이터 로딩 중..'),
-            subtitle: _studentNumber != null //
-                ? Text(
-                    _studentNumber!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                : null,
-          ),
-        ],
+            // NOTE: 비밀번호 변경
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('비밀번호 변경'),
+                ElevatedButton(
+                  onPressed: _changePasswordDialog,
+                  child: const Text('변경하기'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
