@@ -46,10 +46,9 @@ class _UsersScreenState extends State<UsersScreen> {
   // NOTE: 유저 검색
   void _onSearch(String value) {
     setState(() {
-      // TODO: 오류 해결
-      _searchedDataList = cachedDataList
+      _searchedDataList = _dummyDataList
           .where(
-            (e) => e.name.toLowerCase.contains(value.toLowerCase()),
+            (e) => e.name.toLowerCase().contains(value.toLowerCase()),
           )
           .toList();
     });
