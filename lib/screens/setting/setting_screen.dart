@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:daelim/helpers/storage_helper.dart';
+
 import 'package:daelim/common/scaffold/app_scaffold.dart';
 import 'package:daelim/config.dart';
+import 'package:daelim/helpers/storage_helper.dart';
 import 'package:daelim/routes/app_screen.dart';
 import 'package:daelim/screens/setting/dialogs/change_password_dialog.dart';
 import 'package:easy_extension/easy_extension.dart';
@@ -38,7 +39,7 @@ class _SettingScreenState extends State<SettingScreen> {
     final token = StorageHelper.authData!.token;
 
     final response = await http.get(
-      Uri.parse(getUserDataUrl),
+      Uri.parse(Config.api.getUserData),
       headers: {
         HttpHeaders.authorizationHeader: '$tokenType $token',
       },
@@ -66,7 +67,7 @@ class _SettingScreenState extends State<SettingScreen> {
     });
   }
 
-  // NOTE: 프로필 이미지 업로드
+  /// NOTE: 프로필 이미지 업로드
   Future<void> _uploadProfileImage() async {
     if (_profileImageUrl == null || _profileImageUrl?.isEmpty == true) {
       return;
@@ -82,8 +83,10 @@ class _SettingScreenState extends State<SettingScreen> {
     final imageName = imageFile.name;
     final imageMime = lookupMimeType(imageName) ?? 'image/jpeg';
     Uint8List? imageBytes;
-
     String? imagePath;
+
+    // kDebugMode
+    // kReleaseMode
 
     if (kIsWeb) {
       imageBytes = imageFile.bytes;
@@ -99,7 +102,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
     final uploadRequest = http.MultipartRequest(
       'POST',
-      Uri.parse(setProfileImageUrl),
+      Uri.parse(Config.api.setProfileImage),
     )
       ..headers.addAll(
         {
@@ -133,7 +136,7 @@ class _SettingScreenState extends State<SettingScreen> {
     _fetchUserData();
   }
 
-  // NOTE: 비밀번호 변경 다이얼로그
+  /// NOTE: 비밀번호 변경 다이얼로그
   Future<void> _changePasswordDialog() async {
     showDialog(
       context: context,
@@ -147,12 +150,13 @@ class _SettingScreenState extends State<SettingScreen> {
       appScreen: AppScreen.setting,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 13,
+          vertical: 10,
+          horizontal: 14,
         ),
         child: Column(
           children: [
-            // NOTE: 유저 정보 표시(프로필 사진, 이름, 학번
+            // NOTE: 유저 정보 표시 (프로필 사진, 이름, 학번)
+            //#region
             ListTile(
               leading: InkWell(
                 onTap: _uploadProfileImage,
@@ -178,7 +182,9 @@ class _SettingScreenState extends State<SettingScreen> {
                     )
                   : null,
             ),
-            // NOTE: 비밀번호 변경
+            //#endregion
+
+            // NOTE: 비밀번호 변경 버튼
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

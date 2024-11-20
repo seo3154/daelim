@@ -40,12 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _pwController.text;
 
     // NOTE: AuthData 로 변환
-    final authdata = await ApiHelper.signIn(
+    final authData = await ApiHelper.signIn(
       email: email,
       password: password,
     );
 
-    if (authdata == null) {
+    if (authData == null) {
       if (mounted) {
         context.showSnackBar(
           content: const Text('로그인을 실패했습니다.'),
@@ -53,8 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       return;
     }
-    // TODO: 오류수정
-    await StorageHelper.setAuthData(authdata);
+
+    await StorageHelper.setAuthData(authData);
 
     // TODO: 화면 이동
     if (mounted) context.goNamed(AppScreen.users.name);
@@ -185,11 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // NOTE: 둘이 같은 의미
                     36.heightBox,
-                    const SizedBox(
-                      height: 60,
-                    ),
 
                     ..._buildTitleTexts(),
 
@@ -259,15 +255,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         _buildSsoButton(
                           onTap: () => _onSsoSignIn(SsoEnum.google),
-                          iconUrl: icGoogle,
+                          iconUrl: Config.icon.google,
                         ),
                         _buildSsoButton(
                           onTap: () => _onSsoSignIn(SsoEnum.apple),
-                          iconUrl: icApple,
+                          iconUrl: Config.icon.apple,
                         ),
                         _buildSsoButton(
                           onTap: () => _onSsoSignIn(SsoEnum.github),
-                          iconUrl: icGithub,
+                          iconUrl: Config.icon.github,
                         ),
                       ],
                     ),
