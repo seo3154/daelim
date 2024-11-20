@@ -1,15 +1,51 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:daelim/common/typedef/app_typedef.dart';
 import 'package:daelim/config.dart';
 import 'package:daelim/helpers/storage_helper.dart';
 import 'package:daelim/models/auth_data.dart';
 import 'package:daelim/models/user_data.dart';
+import 'package:daelim/routes/app_screen.dart';
 import 'package:easy_extension/easy_extension.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHelper {
-  /// NOTE: 로그인 API
+  /// GET
+  static Future<http.Response> get(String url) {
+    final authData = StorageHelper.authData!;
+
+    return http.get(
+      Uri.parse(url),
+      headers: {
+        HttpHeaders.authorizationHeader:
+            '${authData.tokenType} ${authData.token}',
+      },
+    );
+  }
+
+  /// POST
+  static Future<http.Response> post(
+    String url, {
+    Map<String, dynamic>? body,
+  }) {
+    final authData = StorageHelper.authData;
+
+    return http.post(
+      Uri.parse(url),
+      headers: authData != null
+          ? {
+              HttpHeaders.authorizationHeader:
+                  '${authData.tokenType} ${authData.token}',
+            }
+          : null,
+      body: body != null ? jsonEncode(body) : null,
+    );
+  }
+
+  // NOTE: 로그인 API
   /// - [email] 이메일
   /// - [password] 비밀번호
   /// - [return]
@@ -28,6 +64,13 @@ class ApiHelper {
       body: jsonEncode(loginData),
     );
 
+    // final response = await get(
+    //   Config.api.getToken,
+    //   body: {
+    //     ,
+    //   },
+    // );
+
     final statusCode = response.statusCode;
     final body = utf8.decode(response.bodyBytes);
 
@@ -45,21 +88,36 @@ class ApiHelper {
     }
   }
 
-  /// NOTE: 비밀번호 변경 API
-  /// - [newPassword]: 새로운 비밀번호
-  static Future<(bool success, String error)> changePassword(
-      String newPassword) async {
+  // NOTE: 로그아웃 API
+  static Future<void> signOut(BuildContext context) async {
+    await StorageHelper.removeAuthData();
+
+    if (!context.mounted) return;
+
+    context.goNamed(AppScreen.login.name);
+  }
+
+  // NOTE: 비밀번호 변경 API
+  // - [newPassword]: 새로운 비밀번호
+  static Future<Result> changePassword(String newPassword) async {
     final authData = StorageHelper.authData!;
 
-    final response = await http.post(
-      Uri.parse(Config.api.changePassword),
-      headers: {
-        HttpHeaders.authorizationHeader:
-            '${authData.tokenType} ${authData.token}',
-      },
-      body: jsonEncode({
+    // final response = await http.post(
+    //   Uri.parse(Config.api.changePassword),
+    //   headers: {
+    //     HttpHeaders.authorizationHeader:
+    //         '${authData.tokenType} ${authData.token}',
+    //   },
+    //   body: jsonEncode({
+    //     'password': newPassword,
+    //   }),
+    // );
+
+    final response = await post(
+      Config.api.changePassword,
+      body: {
         'password': newPassword,
-      }),
+      },
     );
 
     final statusCode = response.statusCode;
@@ -72,15 +130,7 @@ class ApiHelper {
 
   /// NOTE: 유저 목록 가져오는 API
   static Future<List<UserData>> fetchUserList() async {
-    final authData = StorageHelper.authData!;
-
-    final response = await http.get(
-      Uri.parse(Config.api.getUserList),
-      headers: {
-        HttpHeaders.authorizationHeader:
-            '${authData.tokenType} ${authData.token}',
-      },
-    );
+    final response = await get(Config.api.getUserList);
 
     final statusCode = response.statusCode;
     final body = utf8.decode(response.bodyBytes);
@@ -91,5 +141,34 @@ class ApiHelper {
     final List<dynamic> data = bodyJson['data'] ?? [];
 
     return data.map((e) => UserData.fromMap(e)).toList();
+  }
+
+  // NOTE: 채팅방 생성 API
+  // - [userId] 상대방 ID
+  static Future<ResultWithCode> createChatRoom(String userId) async {
+    final response = await post(
+      Config.api.createRoom,
+      body: {
+        'user_id': userId,
+      },
+    );
+
+    final statusCode = response.statusCode;
+    final body = utf8.decode(response.bodyBytes);
+
+    if (statusCode != 200) {
+      return (statusCode, body);
+    }
+
+    final bodyJson = jsonDecode(body);
+    final int code = bodyJson['code'] ?? 404;
+    final String message = bodyJson['message'] ?? '';
+
+    Log.green({
+      'Status Code': statusCode,
+      'Body': body,
+    });
+
+    return (code, message);
   }
 }
