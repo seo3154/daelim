@@ -41,11 +41,13 @@ class ApiHelper {
                   '${authData.tokenType} ${authData.token}',
             }
           : null,
-      body: body != null ? jsonEncode(body) : null,
+      body: body != null //
+          ? jsonEncode(body)
+          : null,
     );
   }
 
-  // NOTE: 로그인 API
+  /// NOTE: 로그인 API
   /// - [email] 이메일
   /// - [password] 비밀번호
   /// - [return]
@@ -59,17 +61,10 @@ class ApiHelper {
       'password': password,
     };
 
-    final response = await http.post(
-      Uri.parse(Config.api.getToken),
-      body: jsonEncode(loginData),
+    final response = await post(
+      Config.api.getToken,
+      body: loginData,
     );
-
-    // final response = await get(
-    //   Config.api.getToken,
-    //   body: {
-    //     ,
-    //   },
-    // );
 
     final statusCode = response.statusCode;
     final body = utf8.decode(response.bodyBytes);
@@ -88,7 +83,7 @@ class ApiHelper {
     }
   }
 
-  // NOTE: 로그아웃 API
+  /// NOTE: 로그아웃 API
   static Future<void> signOut(BuildContext context) async {
     await StorageHelper.removeAuthData();
 
@@ -97,22 +92,9 @@ class ApiHelper {
     context.goNamed(AppScreen.login.name);
   }
 
-  // NOTE: 비밀번호 변경 API
-  // - [newPassword]: 새로운 비밀번호
+  /// NOTE: 비밀번호 변경 API
+  /// - [newPassword]: 새로운 비밀번호
   static Future<Result> changePassword(String newPassword) async {
-    final authData = StorageHelper.authData!;
-
-    // final response = await http.post(
-    //   Uri.parse(Config.api.changePassword),
-    //   headers: {
-    //     HttpHeaders.authorizationHeader:
-    //         '${authData.tokenType} ${authData.token}',
-    //   },
-    //   body: jsonEncode({
-    //     'password': newPassword,
-    //   }),
-    // );
-
     final response = await post(
       Config.api.changePassword,
       body: {
@@ -143,8 +125,8 @@ class ApiHelper {
     return data.map((e) => UserData.fromMap(e)).toList();
   }
 
-  // NOTE: 채팅방 생성 API
-  // - [userId] 상대방 ID
+  /// NOTE: 채팅방 생성 API
+  /// - [userId] 상대방 ID
   static Future<ResultWithCode> createChatRoom(String userId) async {
     final response = await post(
       Config.api.createRoom,
@@ -161,14 +143,11 @@ class ApiHelper {
     }
 
     final bodyJson = jsonDecode(body);
+
     final int code = bodyJson['code'] ?? 404;
-    final String message = bodyJson['message'] ?? '';
+    final Map<String, dynamic> message = bodyJson['message'] ?? {};
+    final String roomId = message['room_id'] ?? '';
 
-    Log.green({
-      'Status Code': statusCode,
-      'Body': body,
-    });
-
-    return (code, message);
+    return (code, roomId);
   }
 }

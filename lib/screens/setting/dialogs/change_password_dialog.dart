@@ -85,6 +85,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     }
 
     // NOTE: 비밀번호 변경 성공
+
     if (!mounted) return;
 
     ApiHelper.signOut(context);
