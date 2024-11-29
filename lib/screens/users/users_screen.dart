@@ -1,11 +1,12 @@
-import 'package:daelim/api_error.dart';
 import 'package:daelim/common/scaffold/app_scaffold.dart';
+import 'package:daelim/extensions/context_extension.dart';
 import 'package:daelim/helpers/api_helper.dart';
 import 'package:daelim/models/user_data.dart';
 import 'package:daelim/routes/app_screen.dart';
 import 'package:daelim/screens/users/widgets/user_item.dart';
 import 'package:easy_extension/easy_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -31,12 +32,10 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   void initState() {
     super.initState();
-    // _searchedDataList = _dummyDataList;
-    // _searchedDataList = _fetchUserList();
     _fetchUserList();
   }
 
-  /// NOTE: 유저 목록 가져오기
+  // NOTE: 유저 목록 가져오기
   Future<void> _fetchUserList() async {
     _users = await ApiHelper.fetchUserList();
 
@@ -60,30 +59,32 @@ class _UsersScreenState extends State<UsersScreen> {
   Future<void> _onCreateRoom(UserData user) async {
     Log.green('채팅방 개설: ${user.name}');
 
-    final (code, error) = await ApiHelper.createChatRoom(user.id);
+    final (code, roomId) = await ApiHelper.createChatRoom(user.id);
 
-    Log.green({'Code': code, 'Error': error});
+    // Log.green({'Code': code, 'ROOM ID': roomId});
 
-    if (code == ApiError.createChatRoom.success) {
-      // TODO:
-    } else if (code == ApiError.createChatRoom.requiredUserId) {
-      // TODO:
-    } else if (code == ApiError.createChatRoom.cannotMySelf) {
-      // TODO:
-    } else if (code == ApiError.createChatRoom.notFound) {
-      // TODO:
-    } else if (code == ApiError.createChatRoom.onlyCanChatBot) {
-      // TODO:
-    } else if (code == ApiError.createChatRoom.alreadyRoom) {
-      // TODO:
+    switch (code) {
+      case 200:
+        Log.green('채팅방 개설 완료: $roomId');
+        break;
+      case 1001:
+        return context.showSnackBarText('상대방 ID는 필수입니다.');
+      case 1002:
+        return context.showSnackBarText('자신과 대화할 수 없습니다.');
+      case 1003:
+        return context.showSnackBarText('상대방 검색에 실패했습니다.');
+      case 1004:
+        return context.showSnackBarText('챗봇만 대화가 가능합니다.');
+      case 1005:
+        Log.green('채팅방이 이미 개설되어 있음: $roomId');
+        context.pushNamed(
+          AppScreen.chat.name,
+          pathParameters: {'roomId': roomId},
+        );
+        break;
+      default:
+        break;
     }
-
-    // NOTE: 채팅방 개설 실패
-    // if (code != 200) {
-    //   return context.showSnackBarText(error);
-    // }
-    // NOTE: 채팅방 개설 성공
-    // return context.showSnackBarText('채팅방 개설 성공');
   }
 
   @override
