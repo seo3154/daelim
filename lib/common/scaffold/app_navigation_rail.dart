@@ -18,8 +18,7 @@ class AppNavigationRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screens = List<AppScreen>.from(AppScreen.values);
-    screens.removeAt(0);
-    screens.removeAt(2);
+    screens.removeRange(0, 2);
 
     return Column(
       children: [
