@@ -54,7 +54,7 @@ class UserData {
       email: map['email'],
       studentNumber: map['student_number'],
       profileImageUrl: map['profile_image'],
-      lastSignInAt: map['last_sign_in_at'] != null
+      lastSignInAt: map['last_sign_in_at'] != null //
           ? DateTime.parse(map['last_sign_in_at']).toLocal()
           : null,
     );
@@ -68,27 +68,5 @@ class UserData {
   @override
   String toString() {
     return 'UserData(id: $id, name: $name, email: $email, studentNumber: $studentNumber, profileImageUrl: $profileImageUrl, lastSignInAt: $lastSignInAt)';
-  }
-
-  @override
-  bool operator ==(covariant UserData other) {
-    if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.name == name &&
-        other.email == email &&
-        other.studentNumber == studentNumber &&
-        other.profileImageUrl == profileImageUrl &&
-        other.lastSignInAt == lastSignInAt;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        name.hashCode ^
-        email.hashCode ^
-        studentNumber.hashCode ^
-        profileImageUrl.hashCode ^
-        lastSignInAt.hashCode;
   }
 }

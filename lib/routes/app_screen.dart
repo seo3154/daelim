@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-enum AppScreen { login, users, chattingRooms, chat, setting }
+enum AppScreen { login, chat, users, chattingRooms, setting }
 
 extension AppScreenExtension on AppScreen {
   String get toPath {

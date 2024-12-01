@@ -10,10 +10,7 @@ extension BuildContextExtension on BuildContext {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 5,
-        ),
+        margin: const EdgeInsets.all(15),
         content: content,
       ),
     );
@@ -22,12 +19,13 @@ extension BuildContextExtension on BuildContext {
   void showSnackBarText(String text) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 5,
-          ),
-          content: Text(text)),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
+        ),
+        content: Text(text),
+      ),
     );
   }
 }

@@ -46,14 +46,14 @@ final appRouter = GoRouter(
         child: RoomsScreen(),
       ),
     ),
-    // NOTE: 채팅화면
+    // NOTE: 채팅 화면
     GoRoute(
       path: '${AppScreen.chat.toPath}/:roomId',
       name: AppScreen.chat.name,
       pageBuilder: (context, state) {
         final roomId = state.pathParameters['roomId'];
 
-        Log.green('채팅화면 전환 $roomId');
+        Log.green('채팅화면 전환: $roomId');
 
         return NoTransitionPage(
           child: ChatScreen(

@@ -21,10 +21,14 @@ class GradientDivider extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             Colors.transparent,
-            color.withOpacity(0.25),
+            color.withOpacity(0.24),
           ],
-          begin: reverse ? Alignment.centerRight : Alignment.centerLeft,
-          end: reverse ? Alignment.centerLeft : Alignment.centerRight,
+          begin: !reverse //
+              ? Alignment.centerLeft
+              : Alignment.centerRight,
+          end: !reverse //
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
         ),
       ),
     );
